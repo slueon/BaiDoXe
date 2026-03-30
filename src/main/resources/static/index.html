@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Bãi Xe IoT</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1e1e2d; color: white; margin: 0; padding: 20px; }
+        h1 { text-align: center; color: #00d2ff; text-transform: uppercase; letter-spacing: 2px; }
+        .container { display: flex; gap: 20px; flex-wrap: wrap; }
+        
+        /* Cột bên trái: Bản đồ bãi xe */
+        .map-section { flex: 1; min-width: 300px; background: #2b2b40; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        #parking-lot { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 20px; }
+        .spot { 
+            width: 120px; height: 160px; border-radius: 8px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            font-size: 20px; font-weight: bold; transition: all 0.3s ease;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .empty { background: linear-gradient(135deg, #11998e, #38ef7d); color: white; border: 2px solid #00ff88; }
+        .full { background: linear-gradient(135deg, #cb2d3e, #ef473a); color: white; border: 2px solid #ff4444; }
+
+        /* Cột bên phải: Lịch sử, Nút bấm & Biểu đồ */
+        .info-section { flex: 2; min-width: 500px; background: #2b2b40; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: left; }
+        th, td { padding: 12px; border-bottom: 1px solid #444; }
+        th { color: #00d2ff; }
+        .btn-scan { 
+            background: #f39c12; color: white; border: none; padding: 15px 20px; 
+            font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; width: 100%;
+            margin-bottom: 20px; text-transform: uppercase; transition: 0.2s;
+        }
+        .btn-scan:hover { background: #e67e22; transform: scale(1.02); }
+        
+        /* Khu vực chứa biểu đồ */
+        .chart-container { margin-top: 30px; background: #1e1e2d; padding: 15px; border-radius: 8px; }
+
+        /* ================= CỤC CSS MỚI CHO FORM LOGIN ================= */
+        .login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 90vh;
+        }
+
+        .login-box {
+            background-color: #27293d;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            text-align: center;
+            width: 350px;
+        }
+
+        .login-box h2 {
+            color: #00d2ff;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #2b3553;
+            background-color: #1e1e2d;
+            color: white;
+            border-radius: 5px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        #btnLogin {
+            width: 100%;
+            padding: 12px;
+            background-color: #e14eca;
+            background-image: linear-gradient(to bottom left, #e14eca, #ba54f5, #e14eca);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #btnLogin:hover {
+            opacity: 0.8;
+        }
+
+        .btn-logout {
+            float: right; 
+            margin: 10px; 
+            padding: 8px 15px; 
+            background: #dc3545; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-logout:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-container" class="login-wrapper">
+        <div class="login-box">
+            <h2>🚀 ĐĂNG NHẬP HỆ THỐNG</h2>
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Tên đăng nhập (VD: admin)">
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Mật khẩu">
+            </div>
+            <button id="btnLogin" onclick="handleLogin()">Vào Việc!</button>
+            <p id="login-error" style="color: #ff4d4d; display: none; margin-top: 10px; font-weight: bold;"></p>
+        </div>
+    </div>
+
+    <div id="dashboard-container" style="display: none;">
+        
+        <button class="btn-logout" onclick="handleLogout()">🚪 Đăng Xuất</button>
+
+        <h1>🚀 Hệ Thống Quản Lý Bãi Đỗ Xe IoT</h1>
+
+        <div class="container">
+            <div class="map-section">
+                <h2>🗺️ Sơ Đồ Bãi Xe</h2>
+                <div id="parking-lot">
+                    </div>
+            </div>
+
+            <div class="info-section">
+                <button class="btn-scan" onclick="simulateScan()">💳 Giả lập Quẹt Thẻ (CARD_VIP_01)</button>
+                
+                <h2>📋 Lịch Sử Ra Vào Gần Nhất</h2>
+                <input type="text" id="searchInput" onkeyup="filterHistory()" placeholder="🔍 Nhập biển số xe để tìm kiếm nhanh..." 
+                       style="width: 100%; box-sizing: border-box; padding: 12px; margin-bottom: 15px; border-radius: 5px; border: none; background-color: #3f3f5a; color: white; font-size: 16px; outline: none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Biển Số</th>
+                            <th>Giờ Vào</th>
+                            <th>Giờ Ra</th>
+                            <th>Trạng Thái</th>
+                            <th>Thu Tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table">
+                        </tbody>
+                </table>
+
+                <div class="chart-container">
+                    <h2 style="text-align: center; color: #f39c12;">📊 Thống Kê Doanh Thu Theo Ngày</h2>
+                    <canvas id="revenueChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================= JAVASCRIPT PHẦN ĐĂNG NHẬP =================
+        checkAuth(); // Vừa vào trang là check xem có chìa khóa chưa luôn
+
+        function checkAuth() {
+            const token = localStorage.getItem('iot_parking_token');
+            if (token) {
+                // Đăng nhập rồi -> Vứt form login đi, hiện bãi xe lên
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('dashboard-container').style.display = 'block';
+                
+                // Mở dashboard thì mới bắt đầu kéo data với vẽ vời nhé anh em
+                fetchSpots();
+                fetchHistory();
+            } else {
+                // Chưa đăng nhập -> Hiện bảng login, giấu bãi xe
+                document.getElementById('login-container').style.display = 'flex';
+                document.getElementById('dashboard-container').style.display = 'none';
+            }
+        }
+
+        async function handleLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const errorMsg = document.getElementById('login-error');
+
+            try {
+                // Gọi sang Backend của anh em (cổng 8080)
+                const response = await fetch('http://localhost:8080/api/users/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+
+                // Chờ lấy cục JSON về để đọc lời chào hoặc lời chửi từ sếp Backend
+                const data = await response.json();
+
+                if (response.ok) { // Nếu HTTP 200 OK (Thành công)
+                    localStorage.setItem('iot_parking_token', data.token); // Lưu khóa vào túi
+                    errorMsg.style.display = 'none'; // Giấu thông báo lỗi
+                    alert(data.message); // Bắn thông báo chào sếp cho xịn
+                    checkAuth(); // Quét lại cửa để vào việc!
+                } else { // Nếu HTTP 401 (Lỗi sai pass)
+                    errorMsg.style.display = 'block';
+                    errorMsg.innerText = data.message || 'Sai tài khoản hoặc mật khẩu rồi!';
+                }
+            } catch (error) {
+                console.error('Lỗi gọi API:', error);
+                errorMsg.style.display = 'block';
+                errorMsg.innerText = 'Toang rồi, không kết nối được Backend! Bật server chưa sếp?';
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('iot_parking_token'); // Vứt chìa khóa đi
+            document.getElementById('username').value = ''; // Xóa trắng tài khoản
+            document.getElementById('password').value = ''; // Xóa trắng mật khẩu
+            checkAuth(); // Đuổi ra ngoài
+        }
+
+        // ================= JAVASCRIPT PHẦN DASHBOARD CŨ =================
+        let myChart = null; 
+
+        function fetchSpots() {
+            // Nhớ kiểm tra xem đã login chưa mới cho lấy dữ liệu
+            if(!localStorage.getItem('iot_parking_token')) return; 
+
+            fetch('http://localhost:8080/api/spots')
+                .then(res => res.json())
+                .then(data => {
+                    let html = '';
+                    data.forEach(spot => {
+                        let statusClass = spot.isOccupied ? 'full' : 'empty';
+                        let statusText = spot.isOccupied ? 'CÓ XE' : 'TRỐNG';
+                        html += `
+                            <div class="spot ${statusClass}">
+                                <div>${spot.spotName}</div>
+                                <div style="font-size: 14px; margin-top: 10px;">${statusText}</div>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('parking-lot').innerHTML = html;
+                }).catch(err => console.log(err));
+        }
+
+        function fetchHistory() {
+            if(!localStorage.getItem('iot_parking_token')) return;
+
+            fetch('http://localhost:8080/api/history')
+                .then(res => res.json())
+                .then(data => {
+                    let html = '';
+                    let revenueData = {};
+
+                    let reversedData = [...data].reverse();
+                    reversedData.forEach(row => {
+                        let inTime = row.entryTime ? new Date(row.entryTime).toLocaleTimeString('vi-VN') : '-';
+                        let outTime = row.exitTime ? new Date(row.exitTime).toLocaleTimeString('vi-VN') : '-';
+                        let statusHtml = row.status === 'IN' 
+                            ? '<span style="color:#00ff88;">Đang gửi</span>' 
+                            : '<span style="color:#ff4444;">Đã ra</span>';
+                        let fee = row.fee ? row.fee + ' đ' : '-';
+
+                        html += `
+                            <tr>
+                                <td>${row.rfidCard.licensePlate}</td>
+                                <td>${inTime}</td>
+                                <td>${outTime}</td>
+                                <td>${statusHtml}</td>
+                                <td>${fee}</td>
+                            </tr>
+                        `;
+
+                        if (row.status === 'OUT' && row.fee) {
+                            let dateKey = new Date(row.exitTime).toLocaleDateString('vi-VN');
+                            if (revenueData[dateKey]) {
+                                revenueData[dateKey] += parseFloat(row.fee);
+                            } else {
+                                revenueData[dateKey] = parseFloat(row.fee);
+                            }
+                        }
+                    });
+                    document.getElementById('history-table').innerHTML = html;
+                    drawChart(Object.keys(revenueData), Object.values(revenueData));
+                }).catch(err => console.log(err));
+        }
+
+        function drawChart(labels, dataPoints) {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            if (myChart != null) {
+                myChart.destroy();
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'bar', 
+                data: {
+                    labels: labels, 
+                    datasets: [{
+                        label: 'Doanh thu (VNĐ)',
+                        data: dataPoints,
+                        backgroundColor: 'rgba(243, 156, 18, 0.8)',
+                        borderColor: 'rgba(243, 156, 18, 1)',
+                        borderWidth: 1,
+                        borderRadius: 5 
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: 'white' } },
+                        x: { ticks: { color: 'white' } }
+                    },
+                    plugins: { legend: { labels: { color: 'white' } } }
+                }
+            });
+        }
+
+        function simulateScan() {
+            fetch('http://localhost:8080/api/rfid/scan/CARD_VIP_01', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    fetchHistory(); 
+                }).catch(err => console.log(err));
+        }
+
+        // 2s quét cảm biến 1 lần (Có chốt chặn login nên không lo sập server)
+        setInterval(fetchSpots, 2000); 
+
+        function filterHistory() {
+            let input = document.getElementById("searchInput").value.toUpperCase();
+            let table = document.getElementById("history-table");
+            let tr = table.getElementsByTagName("tr");
+
+            for (let i = 0; i < tr.length; i++) {
+                let tdPlate = tr[i].getElementsByTagName("td")[0]; 
+                if (tdPlate) {
+                    let txtValue = tdPlate.textContent || tdPlate.innerText;
+                    if (txtValue.toUpperCase().indexOf(input) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }       
+            }
+        }
+    </script>
+</body>
+</html>

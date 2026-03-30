@@ -71,7 +71,7 @@ public class MqttSubscriber implements MqttCallback {
                 parkingSpotRepository.save(spot);
                 System.out.println("   -> Da update o do " + spot.getSpotName() + " thanh: " + (isOccupied ? "DAY" : "TRONG"));
             } else {
-                System.out.println("   -> Khong tim thấy o đo nao xai cam bien " + sensorId + " trong database!");
+                System.out.println("   -> Khong tim thay o đo nao xai cam bien " + sensorId + " trong database!");
             }
         }
     }

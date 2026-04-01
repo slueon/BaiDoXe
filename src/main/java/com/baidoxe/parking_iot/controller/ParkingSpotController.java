@@ -3,21 +3,67 @@ package com.baidoxe.parking_iot.controller;
 import com.baidoxe.parking_iot.entity.ParkingSpot;
 import com.baidoxe.parking_iot.repository.ParkingSpotRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity; // Đã bơm thêm
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap; // Đã bơm thêm
 import java.util.List;
+import java.util.Map; // Đã bơm thêm
 
-@RestController // Khai báo đây là bồi bàn chuyên trả về dữ liệu chuẩn JSON cho Web
-@RequestMapping("/api/spots") // Địa chỉ để Web nó gọi vào lấy hàng
-@CrossOrigin(origins = "*") // Bùa chú cực quan trọng: Cho phép Web ở máy khác gọi vào mà không bị chặn
+@RestController 
+@RequestMapping("/api/spots") 
+@CrossOrigin(origins = "*") 
 public class ParkingSpotController {
 
     @Autowired
-    private ParkingSpotRepository parkingSpotRepository; // Gọi thợ xây ra để moi dữ liệu từ DB
+    private ParkingSpotRepository parkingSpotRepository; 
 
-    // Khi Web nó gọi vào đường dẫn /api/spots, hàm này sẽ moi toàn bộ bãi đỗ xe ném ra
+    // ===============================================
+    // 1. API CŨ: MOI TOÀN BỘ BÃI ĐỖ XE
+    // ===============================================
     @GetMapping
     public List<ParkingSpot> getAllSpots() {
         return parkingSpotRepository.findAll();
+    }
+
+    // ===============================================
+    // 2. API MỚI: THÊM Ô ĐỖ XE
+    // ===============================================
+    @PostMapping
+    public ResponseEntity<Map<String, Object>> addSpot(@RequestBody ParkingSpot newSpot) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Mặc định ô mới xây ra là chưa có xe (TRỐNG)
+            newSpot.setIsOccupied(false); 
+            parkingSpotRepository.save(newSpot);
+            
+            response.put("success", true);
+            response.put("message", "Đã quy hoạch thêm ô đỗ mới thành công!");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Lỗi server: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    // ===============================================
+    // 3. API MỚI: XÓA Ô ĐỖ XE (GIẢI TỎA)
+    // ===============================================
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> deleteSpot(@PathVariable Integer id) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Gọi thợ xây ra đập bỏ ô này trong DB
+            parkingSpotRepository.deleteById(id);
+            
+            response.put("success", true);
+            response.put("message", "Đã dẹp bỏ ô đỗ này thành công!");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Lỗi! Đang có xe đỗ ở đây hoặc dính dữ liệu lịch sử!");
+            return ResponseEntity.status(500).body(response);
+        }
     }
 }

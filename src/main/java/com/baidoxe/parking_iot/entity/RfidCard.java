@@ -12,8 +12,6 @@ public class RfidCard {
     @Column(name = "card_id", length = 50)
     private String cardId;
 
-    @Column(name = "license_plate", length = 20)
-    private String licensePlate;
 
     @Column(name = "card_type", length = 20)
     private String cardType = "GUEST";

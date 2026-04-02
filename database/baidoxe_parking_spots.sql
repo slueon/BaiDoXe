@@ -30,7 +30,7 @@ CREATE TABLE `parking_spots` (
   `last_updated` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`spot_id`),
   UNIQUE KEY `sensor_id` (`sensor_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -39,7 +39,7 @@ CREATE TABLE `parking_spots` (
 
 LOCK TABLES `parking_spots` WRITE;
 /*!40000 ALTER TABLE `parking_spots` DISABLE KEYS */;
-INSERT INTO `parking_spots` VALUES (1,'ô số 1','S1',0,'2026-03-26 11:05:33');
+INSERT INTO `parking_spots` VALUES (1,'ô số 1','S1',1,'2026-03-31 15:04:30'),(2,'ô số 2','S2',1,'2026-04-01 19:47:07'),(3,'ô số 3','S3',1,'2026-04-02 02:11:41'),(4,'ô số 4','S4',1,'2026-04-02 01:54:35'),(9,'5','S5',0,'2026-04-02 03:12:51');
 /*!40000 ALTER TABLE `parking_spots` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -52,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-30 21:24:56
+-- Dump completed on 2026-04-02  9:24:42

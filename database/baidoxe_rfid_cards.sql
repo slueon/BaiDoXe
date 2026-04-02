@@ -24,7 +24,6 @@ DROP TABLE IF EXISTS `rfid_cards`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rfid_cards` (
   `card_id` varchar(50) NOT NULL,
-  `license_plate` varchar(20) DEFAULT NULL,
   `card_type` varchar(20) DEFAULT 'GUEST',
   `is_active` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`card_id`)
@@ -37,7 +36,7 @@ CREATE TABLE `rfid_cards` (
 
 LOCK TABLES `rfid_cards` WRITE;
 /*!40000 ALTER TABLE `rfid_cards` DISABLE KEYS */;
-INSERT INTO `rfid_cards` VALUES ('CARD_VIP_01','17AA-61621','VIP',1);
+INSERT INTO `rfid_cards` VALUES ('03','GUEST',1),('CARD_VIP_01','VIP',1),('CARD02','GUEST',1);
 /*!40000 ALTER TABLE `rfid_cards` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -50,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-30 21:24:56
+-- Dump completed on 2026-04-02  9:24:43

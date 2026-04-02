@@ -38,7 +38,7 @@ public class RfidController {
         ParkingHistory activeSession = historyRepo.findByRfidCard_CardIdAndStatus(cardId, "IN");
 
         if (activeSession == null) {
-            // Xe VÀO bãi
+            // ================= XE VÀO BÃI =================
             ParkingHistory newSession = new ParkingHistory();
             newSession.setRfidCard(cardOpt.get());
             newSession.setEntryTime(LocalDateTime.now());
@@ -47,17 +47,35 @@ public class RfidController {
             
             response.put("success", true);
             response.put("action", "ENTRY");
-            response.put("message", "Mở barie! Biển số: " + cardOpt.get().getLicensePlate() + " vào bãi.");
+            // Đã xóa biển số, chỉ in mã thẻ
+            response.put("message", "Mở barie! Thẻ " + cardId + " vào bãi.");
         } else {
-            // Xe RA khỏi bãi
-            activeSession.setExitTime(LocalDateTime.now());
+            // ================= XE RA KHỎI BÃI (TÍNH TIỀN) =================
+            LocalDateTime now = LocalDateTime.now();
+            activeSession.setExitTime(now);
             activeSession.setStatus("OUT");
-            activeSession.setFee(5000.0); // Thu đồng giá 5k cho dễ test
+            
+            // LOGIC TÍNH TIỀN:
+            // Lấy ngày vào và ngày ra để so sánh
+            java.time.LocalDate entryDate = activeSession.getEntryTime().toLocalDate();
+            java.time.LocalDate exitDate = now.toLocalDate();
+            
+            // Tính số ngày chênh lệch
+            long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(entryDate, exitDate);
+            
+            double fee;
+            if (daysBetween == 0) {
+                fee = 5000.0; // Lấy trong ngày: 5k
+            } else {
+                fee = 10000.0; // Sang ngày hôm sau: 10k (Hoặc sếp có thể nhân lên: 5000 + 5000 * daysBetween)
+            }
+            
+            activeSession.setFee(fee); 
             historyRepo.save(activeSession);
             
             response.put("success", true);
             response.put("action", "EXIT");
-            response.put("message", "Mở barie! Thu tiền: 5000 VND. Tạm biệt quý khách!");
+            response.put("message", "Mở barie! Thu tiền: " + fee + " VNĐ. Tạm biệt quý khách!");
         }
         return response;
     }

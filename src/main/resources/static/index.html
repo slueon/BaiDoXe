@@ -98,7 +98,7 @@
                         <button class="btn-scan" onclick="simulateScan()">💳 Giả lập Quẹt Thẻ</button>
                         <h2>📋 Lịch Sử Ra Vào Gần Nhất</h2>
                         <table>
-                            <thead><tr><th>Biển Số</th><th>Giờ Vào</th><th>Giờ Ra</th><th>Trạng Thái</th></tr></thead>
+                            <thead><tr><th>Mã Thẻ</th><th>Giờ Vào</th><th>Giờ Ra</th><th>Trạng Thái</th></tr></thead>
                             <tbody id="history-table"></tbody>
                         </table>
                         <div class="chart-container" style="margin-top: 30px; background: #1e1e2d; padding: 15px; border-radius: 8px;">
@@ -155,7 +155,6 @@
                         <thead>
                             <tr>
                                 <th>Mã Thẻ (UID)</th>
-                                <th>Biển Số Xe</th>
                                 <th>Trạng Thái</th>
                                 <th>Hành động</th>
                             </tr>
@@ -177,6 +176,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Tên Ô Đỗ</th>
+                                <th>Mã Cảm Biến</th>
                                 <th>Trạng Thái Hiện Tại</th>
                                 <th>Hành động</th>
                             </tr>
@@ -414,7 +414,6 @@
 
         // ================= LOGIC QUẢN LÝ THẺ RFID =================
         function fetchRfidCards() {
-            // Đã đổi link thành /api/rfid
             fetch('http://localhost:8080/api/rfid') 
                 .then(res => res.json())
                 .then(data => {
@@ -423,11 +422,10 @@
                         let statusColor = card.status === 'LOCKED' ? '#ff4d4d' : '#00ff88';
                         let statusText = card.status === 'LOCKED' ? 'BỊ KHÓA' : 'HOẠT ĐỘNG';
                         
-                        // Ở đây đã đổi card.uid thành card.cardId cho khớp Java của sếp
+                        // Đã vứt bỏ cái <td> chứa licensePlate
                         html += `
                             <tr>
                                 <td><strong style="color: #f39c12;">${card.cardId}</strong></td>
-                                <td>${card.licensePlate || 'Chưa gán biển'}</td>
                                 <td><span style="color:${statusColor}; font-weight:bold;">${statusText}</span></td>
                                 <td>
                                     <button class="btn-delete" onclick="alert('Tính năng khóa thẻ đang code!')">Khóa Thẻ</button>
@@ -443,18 +441,15 @@
         async function addNewRfidCard() {
             let uid = prompt("Nhập mã Thẻ (VD: CARD_VIP_02):");
             if (!uid) return;
-            
-            let licensePlate = prompt("Nhập biển số xe gán cho thẻ này (VD: 29A-99999):");
-            if (!licensePlate) return;
+
+            // XÓA LUÔN CÁI PROMPT HỎI BIỂN SỐ XE RỒI NHÉ SẾP
 
             let newCardData = {
-                cardId: uid, // Chỗ này cực kỳ quan trọng: Phải map đúng tên biến "cardId" của Entity Java
-                licensePlate: licensePlate,
+                cardId: uid, 
                 status: 'ACTIVE' 
             };
 
             try {
-                // Đã đổi link thành /api/rfid
                 const response = await fetch('http://localhost:8080/api/rfid', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -476,14 +471,16 @@
                     let html = '';
                     data.forEach(spot => {
                         let statusText = spot.isOccupied ? '<span style="color:#ff4d4d; font-weight:bold;">CÓ XE</span>' : '<span style="color:#00ff88; font-weight:bold;">TRỐNG</span>';
-                        // Map đúng tên biến ID của sếp (spotId hoặc id)
                         let currentId = spot.spotId || spot.id; 
+                        
+                        // BƠM THÊM CÁI NÀY: Check xem có cảm biến chưa
+                        let sensorDisplay = spot.sensorId ? `<strong style="color:#f39c12">${spot.sensorId}</strong>` : '<i style="color:gray">Chưa gắn</i>';
                         
                         html += `
                             <tr>
                                 <td>${currentId}</td>
                                 <td><strong style="font-size: 16px;">${spot.spotName}</strong></td>
-                                <td>${statusText}</td>
+                                <td>${sensorDisplay}</td> <td>${statusText}</td>
                                 <td>
                                     <button class="btn-delete" onclick="deleteSpot(${currentId}, '${spot.spotName}')">Xóa Ô Này</button>
                                 </td>
@@ -499,18 +496,28 @@
             let spotName = prompt("Nhập tên ô đỗ mới (VD: Ô số 5):");
             if (!spotName) return;
 
+            // BƠM THÊM ĐOẠN NÀY: Hỏi luôn mã cảm biến
+            let sensorIdInput = prompt("Nhập mã Cảm Biến gắn ở ô này (VD: S5).\nLưu ý: Không được nhập trùng với ô khác!");
+
+            // Đóng gói gửi xuống Backend
+            let newSpotData = {
+                spotName: spotName,
+                isOccupied: false,
+                sensorId: sensorIdInput || null // Nhét thêm thằng sensorId vào đây
+            };
+
             try {
                 const response = await fetch('http://localhost:8080/api/spots', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ spotName: spotName, isOccupied: false })
+                    body: JSON.stringify(newSpotData)
                 });
                 const data = await response.json();
                 alert(data.message || "Thành công!");
                 
                 if (response.ok) {
-                    fetchManageSpots(); // Load lại bảng quản lý
-                    fetchSpots(); // Load lại cả cái Sơ đồ xanh đỏ bên Dashboard!
+                    fetchManageSpots(); 
+                    fetchSpots(); 
                 }
             } catch (error) {
                 alert("Lỗi kết nối Backend!");
@@ -562,9 +569,9 @@
                 .then(res => res.json())
                 .then(data => {
                     let html = '';
-                    let revenueData = {}; // Cái giỏ để gom tiền theo ngày
+                    let revenueData = {}; 
 
-                    let reversedData = [...data].reverse(); // Đảo mảng cho cái mới nhất lên đầu
+                    let reversedData = [...data].reverse(); 
                     
                     reversedData.forEach(row => {
                         let inTime = row.entryTime ? new Date(row.entryTime).toLocaleTimeString('vi-VN') : '-';
@@ -572,18 +579,17 @@
                         let statusHtml = row.status === 'IN' ? '<span style="color:#00ff88;">Đang gửi</span>' : '<span style="color:#ff4444;">Đã ra</span>';
                         let fee = row.fee ? row.fee + ' đ' : '-';
                         
-                        // Xử lý an toàn vụ biển số xe
-                        let licensePlate = (row.rfidCard && row.rfidCard.licensePlate) ? row.rfidCard.licensePlate : 'Chưa rõ';
+                        // ======== ĐOẠN MỚI THAY ĐỔI Ở ĐÂY NÀY SẾP ========
+                        // Chuyển từ việc lấy Biển số sang lấy Mã thẻ (cardId)
+                        let cardDisplay = (row.rfidCard && row.rfidCard.cardId) ? row.rfidCard.cardId : 'Khách lạ';
 
-                        // Đổ data vào cái Bảng HTML
-                        html += `<tr><td>${licensePlate}</td><td>${inTime}</td><td>${outTime}</td><td>${statusHtml}</td><td>${fee}</td></tr>`;
-                        
-                        // LOGIC TÍNH TIỀN ĐÂY: Nếu xe đã ra (OUT) và có thu tiền phí
+                        // Đổ data vào dòng <tr> của bảng
+                        html += `<tr><td><strong style="color: #00d2ff;">${cardDisplay}</strong></td><td>${inTime}</td><td>${outTime}</td><td>${statusHtml}</td><td>${fee}</td></tr>`;
+                        // ===================================================
+
+                        // LOGIC TÍNH TIỀN DOANH THU
                         if (row.status === 'OUT' && row.fee) {
-                            // Lấy ngày ra làm chìa khóa (VD: "01/04/2026")
                             let dateKey = new Date(row.exitTime).toLocaleDateString('vi-VN');
-                            
-                            // Cộng dồn tiền vào ngày đó
                             if (revenueData[dateKey]) {
                                 revenueData[dateKey] += parseFloat(row.fee);
                             } else {
@@ -593,8 +599,6 @@
                     });
                     
                     document.getElementById('history-table').innerHTML = html;
-                    
-                    // Lấy cục tiền vừa tính xong ném cho thằng Chart.js nó vẽ
                     drawChart(Object.keys(revenueData), Object.values(revenueData)); 
                 }).catch(err => console.log('Lỗi kéo lịch sử:', err));
         }

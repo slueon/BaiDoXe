@@ -7,77 +7,101 @@ import org.eclipse.paho.client.mqttv3.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
 public class MqttSubscriber implements MqttCallback {
 
-    // Đây là Broker test miễn phí. Sau này làm đồ án ông có thể cài Mosquitto broker trên máy chạy local.
-    private static final String BROKER_URL = "tcp://broker.hivemq.com:1883";
+    private static final String BROKER_URL = "tcp://broker.emqx.io:1883";
     private static final String CLIENT_ID = MqttClient.generateClientId();
     
-    // Đăng ký nghe kênh (topic) này. Cảm biến phải gửi tin nhắn vào kênh này.
-    private static final String TOPIC_FILTER = "baidoxe/sensor/#";
-
     private MqttClient client;
 
     @Autowired
-    private ParkingSpotRepository parkingSpotRepository; // Gọi thợ xây ra để chuẩn bị update DB
+    private ParkingSpotRepository parkingSpotRepository;
 
-    // Hàm này sẽ tự động chạy ngay khi Spring Boot khởi động xong
+    // Gọi Controller của thẻ RFID vào để xử lý tính tiền
+    @Autowired
+    private com.baidoxe.parking_iot.controller.RfidController rfidController;
+
     @PostConstruct
     public void startListening() {
         try {
             client = new MqttClient(BROKER_URL, CLIENT_ID);
-            client.setCallback(this); // Khai báo class này sẽ là người xử lý tin nhắn
+            client.setCallback(this);
             
             MqttConnectOptions options = new MqttConnectOptions();
             options.setCleanSession(true);
             
             client.connect(options);
-            client.subscribe(TOPIC_FILTER);
             
-            System.out.println("Da ket noi MQTT Broker thanh cong! Dang doi topic: " + TOPIC_FILTER);
+            // ĐĂNG KÝ NGHE 2 KÊNH
+            client.subscribe("/state/park/#");         // Kênh 1: Cảm biến ô đỗ
+            client.subscribe("/ptit/parking/check");   // Kênh 2: Đầu đọc thẻ RFID
+            
+            System.out.println("Đã kết nối MQTT! Đang nghe cảm biến và thẻ RFID...");
         } catch (MqttException e) {
-            System.err.println("Loi! Khong ket noi đuoc MQTT: " + e.getMessage());
+            System.err.println("Lỗi kết nối MQTT: " + e.getMessage());
         }
     }
 
     @Override
     public void connectionLost(Throwable cause) {
-        System.out.println("Mat ket noi MQTT! Ly do: " + cause.getMessage());
-        // TODO: Đoạn này ông có thể code thêm hàm tự động reconnect nếu muốn xịn
+        System.out.println("Mất kết nối MQTT! Lý do: " + cause.getMessage());
     }
 
-    // Hàm này cực quan trọng: Mỗi khi có cảm biến nào đẩy dữ liệu lên, hàm này sẽ tự động nhảy vào chạy!
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-        String payload = new String(message.getPayload());
-        System.out.println("Co bien! Topic: " + topic + " | Du lieu cam bien: " + payload);
+        String payload = new String(message.getPayload()).trim();
 
-        // Quy ước gửi: topic = baidoxe/sensor/S1 (S1 là ID của cảm biến gắn ở ô đỗ đó)
-        // payload = "1" (có xe), "0" (trống)
-        String[] parts = topic.split("/");
-        if (parts.length == 3) {
-            String sensorId = parts[2]; // Lấy chữ S1 ra
-            
-            // Tìm ô đỗ xe trong Database xem ô nào đang gắn con cảm biến S1 này
-            ParkingSpot spot = parkingSpotRepository.findBySensorId(sensorId);
-            
-            if (spot != null) {
-                // Có xe = 1, Không xe = 0
-                boolean isOccupied = payload.equals("1"); 
-                spot.setIsOccupied(isOccupied);
+        // ==========================================
+        // TRƯỜNG HỢP 1: CẢM BIẾN VỊ TRÍ ĐỖ BÁO VỀ
+        // ==========================================
+        if (topic.startsWith("/state/park/")) {
+            String[] parts = topic.split("/");
+            if (parts.length >= 4) {
+                String sensorId = parts[3]; 
+                ParkingSpot spot = parkingSpotRepository.findBySensorId(sensorId);
                 
-                // Ra lệnh cho thợ xây cập nhật trạng thái vào MySQL
-                parkingSpotRepository.save(spot);
-                System.out.println("   -> Da update o do " + spot.getSpotName() + " thanh: " + (isOccupied ? "DAY" : "TRONG"));
-            } else {
-                System.out.println("   -> Khong tim thay o đo nao xai cam bien " + sensorId + " trong database!");
+                if (spot != null) {
+                    boolean isOccupied = payload.equals("0"); // "0" là CÓ XE
+                    spot.setIsOccupied(isOccupied);
+                    parkingSpotRepository.save(spot);
+                }
+            }
+        } 
+        
+        // ==========================================
+        // TRƯỜNG HỢP 2: THẺ RFID VỪA ĐƯỢC QUẸT
+        // ==========================================
+        else if (topic.equals("/ptit/parking/check")) {
+            System.out.println("💳 Vừa quẹt thẻ UID: " + payload);
+            
+            // Gọi hàm xử lý (Hàm này tự động biết là Vào hay Ra nhờ Database)
+            Map<String, Object> result = rfidController.scanCard(payload);
+            System.out.println("   -> Kết quả: " + result.get("message"));
+            
+            // Nếu Java duyệt cho qua (thành công)
+            if (result.containsKey("success") && (Boolean) result.get("success")) {
+                
+                // Lấy ra hành động là ENTRY (Vào) hay EXIT (Ra)
+                String action = (String) result.get("action");
+                
+                if ("ENTRY".equals(action)) {
+                    // XE VÀO: Bắn số "1" lên kênh điều khiển
+                    client.publish("/ptit/servo/control", new MqttMessage("1".getBytes()));
+                    System.out.println("🚧 Đã bắn lệnh 1 (MỞ BARIE VÀO)!");
+                } 
+                else if ("EXIT".equals(action)) {
+                    // XE RA: Bắn số "2" lên kênh điều khiển
+                    client.publish("/ptit/servo/control", new MqttMessage("2".getBytes()));
+                    System.out.println("🚧 Đã bắn lệnh 2 (MỞ BARIE RA)!");
+                }
             }
         }
     }
 
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-        // Chỉ dùng khi gửi tin nhắn, ở đây mình chỉ nghe nên kệ nó
     }
 }

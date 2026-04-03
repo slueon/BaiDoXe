@@ -95,7 +95,7 @@
                         <div id="parking-lot"></div>
                     </div>
                     <div class="info-section">
-                        <button class="btn-scan" onclick="simulateScan()">💳 Giả lập Quẹt Thẻ</button>
+                        <button class="btn-scan" style="background-color: #e74c3c; margin-left: 10px;" onclick="openManualBarrier()">🚧 Mở Barie Thủ Công</button>
                         <h2>📋 Lịch Sử Ra Vào Gần Nhất</h2>
                         <table>
                             <thead><tr><th>Mã Thẻ</th><th>Giờ Vào</th><th>Giờ Ra</th><th>Trạng Thái</th></tr></thead>
@@ -638,8 +638,32 @@
                 }
             });
         }
-    
-    
+
+        // Hàm xử lý khi ấn nút Mở Barie Thủ Công
+        async function openManualBarrier() {
+            // Hỏi lại cho chắc cốp, lỡ bảo vệ tì đè nhầm vào chuột
+            if (!confirm("Sếp có chắc chắn muốn MỞ BARIE THỦ CÔNG không?")) return;
+
+            try {
+                // Gọi API bắn lệnh mở xuống Backend
+                const response = await fetch('http://localhost:8080/api/barrier/open', { 
+                    method: 'POST' 
+                });
+                const data = await response.json();
+                
+                // Hiển thị thông báo (Mở thành công)
+                alert(data.message);
+                
+            } catch (error) {
+                alert("Lỗi không kết nối được Backend để mở Barie!");
+            }
+        }
+        
+        // ================= TỰ ĐỘNG CẬP NHẬT DỮ LIỆU THẬT =================
+        // Cứ 2 giây, Web sẽ tự động gọi Backend để lấy lịch sử và sơ đồ bãi xe mới nhất
+        // Ông bảo vệ không cần bấm nút gì cả, chỉ việc ngồi nhìn màn hình
+        setInterval(fetchHistory, 2000);
+        setInterval(fetchSpots, 2000);
     </script>
 </body>
 </html>

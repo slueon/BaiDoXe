@@ -92,18 +92,30 @@
                 <div class="dashboard-grid">
                     <div class="map-section">
                         <h2>🗺️ Sơ Đồ Bãi Xe</h2>
-                        <div id="parking-lot"></div>
-                    </div>
-                    <div class="info-section">
-                        <button class="btn-scan" style="background-color: #e74c3c; margin-left: 10px;" onclick="openManualBarrier()">🚧 Mở Barie Thủ Công</button>
-                        <h2>📋 Lịch Sử Ra Vào Gần Nhất</h2>
-                        <table>
-                            <thead><tr><th>Mã Thẻ</th><th>Giờ Vào</th><th>Giờ Ra</th><th>Trạng Thái</th></tr></thead>
-                            <tbody id="history-table"></tbody>
-                        </table>
-                        <div class="chart-container" style="margin-top: 30px; background: #1e1e2d; padding: 15px; border-radius: 8px;">
-                            <h2 style="text-align: center; color: #f39c12;">📊 Thống Kê Doanh Thu Theo Ngày</h2>
-                            <canvas id="revenueChart" height="100"></canvas>
+                    <div id="parking-lot"></div>
+                </div>
+            <div class="info-section">
+            
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; width: 100%;">
+                <button id="btn-gate-in" class="btn-scan" style="flex: 1; margin: 0; background-color: #e67e22;" 
+                onclick="toggleBarrier('in', this)">
+                Mở Barrie đường vào
+                </button>
+    
+                <button id="btn-gate-out" class="btn-scan" style="flex: 1; margin: 0; background-color: #e74c3c;" 
+                onclick="toggleBarrier('out', this)">
+                Mở Barrie đường ra
+                </button>
+            </div>
+            <h2>📋 Lịch Sử Ra Vào Gần Nhất</h2>
+            <table>
+                <thead><tr><th>Mã Thẻ</th><th>Giờ Vào</th><th>Giờ Ra</th><th>Trạng Thái</th></tr></thead>
+                <tbody id="history-table"></tbody>
+            </table>
+            
+            <div class="chart-container" style="margin-top: 30px; background: #1e1e2d; padding: 15px; border-radius: 8px;">
+                <h2 style="text-align: center; color: #f39c12;">📊 Thống Kê Doanh Thu Theo Ngày</h2>
+                <canvas id="revenueChart" height="100"></canvas>
                         </div>
                     </div>
                 </div>
@@ -640,22 +652,45 @@
         }
 
         // Hàm xử lý khi ấn nút Mở Barie Thủ Công
-        async function openManualBarrier() {
-            // Hỏi lại cho chắc cốp, lỡ bảo vệ tì đè nhầm vào chuột
-            if (!confirm("Sếp có chắc chắn muốn MỞ BARIE THỦ CÔNG không?")) return;
+        // HÀM GỌI API MỞ BARIE THEO LÀN VÀO/RA
+// Hàm điều khiển Đóng/Mở Barie khẩn cấp
+        async function toggleBarrier(gate, btnElement) {
+            const isEntrance = (gate === 'in');
+            const gateCode = isEntrance ? "1" : "2"; // 1 cho cổng vào, 2 cho cổng ra
+            const currentText = btnElement.innerText;
+            
+            let command = "";
+            let nextText = "";
+            let nextColor = "";
+
+            // Kiểm tra trạng thái hiện tại dựa trên chữ hiển thị trên nút
+            if (currentText.includes("Mở")) {
+                command = "O" + gateCode; // Lệnh Open: O1 hoặc O2
+                nextText = `Đóng Barrie đường ${isEntrance ? 'vào' : 'ra'}`;
+                nextColor = "#2c3e50"; // Đổi sang màu tối khi trạng thái là "Đang Mở"
+            } else {
+                command = "C" + gateCode; // Lệnh Close: C1 hoặc C2
+                nextText = `Mở Barrie đường ${isEntrance ? 'vào' : 'ra'}`;
+                nextColor = isEntrance ? "#e67e22" : "#e74c3c"; // Trả lại màu cam/đỏ gốc
+            }
 
             try {
-                // Gọi API bắn lệnh mở xuống Backend
-                const response = await fetch('http://localhost:8080/api/barrier/open', { 
+                // Gọi API gửi mã lệnh O1, C1, O2, hoặc C2
+                const response = await fetch(`http://localhost:8080/api/barrier/emergency/${command}`, { 
                     method: 'POST' 
                 });
                 const data = await response.json();
                 
-                // Hiển thị thông báo (Mở thành công)
-                alert(data.message);
-                
+                if (data.success) {
+                    // Cập nhật giao diện nút sau khi gửi lệnh thành công
+                    btnElement.innerText = nextText;
+                    btnElement.style.backgroundColor = nextColor;
+                    console.log(`Đã gửi thành công lệnh ${command} tới /ptit/servo/emergency`);
+                } else {
+                    alert("Lỗi: " + data.message);
+                }
             } catch (error) {
-                alert("Lỗi không kết nối được Backend để mở Barie!");
+                alert("Mất kết nối với Backend!");
             }
         }
         

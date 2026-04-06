@@ -104,4 +104,18 @@ public class MqttSubscriber implements MqttCallback {
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
     }
+
+    // Hàm này cho phép Controller gọi đến để bắn tin nhắn lên MQTT
+    public void publishMessage(String topic, String payload) {
+        try {
+            if (client != null && client.isConnected()) {
+                client.publish(topic, new MqttMessage(payload.getBytes()));
+                System.out.println("📤 Đã gửi lệnh THỦ CÔNG -> Topic: " + topic + " | Lệnh: " + payload);
+            } else {
+                System.out.println("❌ Lỗi: MQTT chưa kết nối!");
+            }
+        } catch (MqttException e) {
+            System.err.println("❌ Lỗi gửi MQTT: " + e.getMessage());
+        }
+    }
 }

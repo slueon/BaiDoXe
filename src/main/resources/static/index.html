@@ -5,7 +5,6 @@
     <title>Dashboard Bãi Xe IoT</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* === CSS CHUẨN FORM CŨ === */
         body { font-family: 'Segoe UI', sans-serif; background-color: #1e1e2d; color: white; margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
         h1 { text-align: center; color: #00d2ff; text-transform: uppercase; letter-spacing: 2px; }
         
@@ -61,7 +60,7 @@
 
     <div id="login-container">
         <div class="login-box">
-            <h2>🚀 ĐĂNG NHẬP HỆ THỐNG</h2>
+            <h2>ĐĂNG NHẬP HỆ THỐNG</h2>
             <div class="input-group"><input type="text" id="username" placeholder="Tên đăng nhập"></div>
             <div class="input-group"><input type="password" id="password" placeholder="Mật khẩu"></div>
             <button id="btnLogin" onclick="handleLogin()">Vào Việc!</button>
@@ -72,26 +71,26 @@
     <div id="app-container">
         
         <div id="sidebar" class="sidebar">
-            <h3>⚙️ MENU QUẢN LÝ</h3>
-            <div class="menu-item active" onclick="switchTab('tab-dashboard', this)">🏠 Dashboard Bãi Xe</div>
-            <div class="menu-item" onclick="switchTab('tab-users', this)">👥 Quản Lý Nhân Sự</div>
-            <div class="menu-item" onclick="switchTab('tab-rfid', this)">💳 Quản Lý Thẻ RFID</div>
-            <div class="menu-item" onclick="switchTab('tab-spots', this)">🅿️ Quản Lý Vị Trí Đỗ</div>
+            <h3>MENU QUẢN LÝ</h3>
+            <div class="menu-item active" onclick="switchTab('tab-dashboard', this)">Dashboard Bãi Xe</div>
+            <div class="menu-item" onclick="switchTab('tab-users', this)">Quản Lý Nhân Sự</div>
+            <div class="menu-item" onclick="switchTab('tab-rfid', this)">Quản Lý Thẻ RFID</div>
+            <div class="menu-item" onclick="switchTab('tab-spots', this)">Quản Lý Vị Trí Đỗ</div>
         </div>
 
         <div class="main-content">
             <div class="top-bar">
-                <h1>🚀 Hệ Thống Quản Lý Bãi Đỗ Xe IoT</h1>
+                <h1>Hệ Thống Quản Lý Bãi Đỗ Xe IoT</h1>
                 <div>
                     <span id="welcome-text" class="user-info"></span>
-                    <button class="btn-logout" onclick="handleLogout()" style="margin-left: 15px;">🚪 Đăng Xuất</button>
+                    <button class="btn-logout" onclick="handleLogout()" style="margin-left: 15px;">Đăng Xuất</button>
                 </div>
             </div>
 
             <div id="tab-dashboard" class="tab-content active">
                 <div class="dashboard-grid">
                     <div class="map-section">
-                        <h2>🗺️ Sơ Đồ Bãi Xe</h2>
+                        <h2>Sơ Đồ Bãi Xe</h2>
                     <div id="parking-lot"></div>
                 </div>
             <div class="info-section">
@@ -107,14 +106,14 @@
                 Mở Barrie đường ra
                 </button>
             </div>
-            <h2>📋 Lịch Sử Ra Vào Gần Nhất</h2>
+            <h2>Lịch Sử Ra Vào Gần Nhất</h2>
             <table>
                 <thead><tr><th>Mã Thẻ</th><th>Giờ Vào</th><th>Giờ Ra</th><th>Trạng Thái</th></tr></thead>
                 <tbody id="history-table"></tbody>
             </table>
             
             <div class="chart-container" style="margin-top: 30px; background: #1e1e2d; padding: 15px; border-radius: 8px;">
-                <h2 style="text-align: center; color: #f39c12;">📊 Thống Kê Doanh Thu Theo Ngày</h2>
+                <h2 style="text-align: center; color: #f39c12;">Thống Kê Doanh Thu Theo Ngày</h2>
                 <canvas id="revenueChart" height="100"></canvas>
                         </div>
                     </div>
@@ -124,8 +123,8 @@
             <div id="tab-users" class="tab-content">
                 <div class="crud-container">
                     <div class="crud-header">
-                        <h2>👥 Danh Sách Nhân Viên & Quản Trị</h2>
-                        <button class="btn-add" onclick="addNewUser()">➕ Thêm Nhân Viên</button>
+                        <h2>Danh Sách Nhân Viên & Quản Trị</h2>
+                        <button class="btn-add" onclick="addNewUser()">Thêm Nhân Viên</button>
                     </div>
                     <table>
                         <thead>
@@ -161,7 +160,7 @@
                 <div class="crud-container">
                     <div class="crud-header">
                         <h2>💳 Danh Sách Thẻ RFID Đã Đăng Ký</h2>
-                        <button class="btn-add" onclick="addNewRfidCard()">➕ Gán Thẻ Mới</button>
+                        <button class="btn-add" onclick="addNewRfidCard()">Gán Thẻ Mới</button>
                     </div>
                     <table>
                         <thead>
@@ -180,8 +179,8 @@
             <div id="tab-spots" class="tab-content">
                 <div class="crud-container">
                     <div class="crud-header">
-                        <h2>🅿️ Danh Sách Vị Trí Đỗ Xe</h2>
-                        <button class="btn-add" onclick="addNewSpot()">➕ Quy Hoạch Thêm Ô Mới</button>
+                        <h2>Danh Sách Vị Trí Đỗ Xe</h2>
+                        <button class="btn-add" onclick="addNewSpot()">Quy Hoạch Thêm Ô Mới</button>
                     </div>
                     <table>
                         <thead>
@@ -203,7 +202,7 @@
     </div>
 
     <script>
-        // HÀM CHUYỂN TAB CỰC MƯỢT
+        // HÀM CHUYỂN TAB
         function switchTab(tabId, menuItem) {
             // 1. Giấu hết các tab đi
             let tabs = document.querySelectorAll('.tab-content');
@@ -231,7 +230,7 @@
             }
         }
 
-        // ================= LOGIC ĐĂNG NHẬP (GIỮ NGUYÊN) =================
+        // ================= LOGIC ĐĂNG NHẬP=================
         checkAuth();
 
         function checkAuth() {
@@ -434,7 +433,6 @@
                         let statusColor = card.status === 'LOCKED' ? '#ff4d4d' : '#00ff88';
                         let statusText = card.status === 'LOCKED' ? 'BỊ KHÓA' : 'HOẠT ĐỘNG';
                         
-                        // Đã vứt bỏ cái <td> chứa licensePlate
                         html += `
                             <tr>
                                 <td><strong style="color: #f39c12;">${card.cardId}</strong></td>
@@ -453,8 +451,6 @@
         async function addNewRfidCard() {
             let uid = prompt("Nhập mã Thẻ (VD: CARD_VIP_02):");
             if (!uid) return;
-
-            // XÓA LUÔN CÁI PROMPT HỎI BIỂN SỐ XE RỒI NHÉ SẾP
 
             let newCardData = {
                 cardId: uid, 
@@ -485,7 +481,6 @@
                         let statusText = spot.isOccupied ? '<span style="color:#ff4d4d; font-weight:bold;">CÓ XE</span>' : '<span style="color:#00ff88; font-weight:bold;">TRỐNG</span>';
                         let currentId = spot.spotId || spot.id; 
                         
-                        // BƠM THÊM CÁI NÀY: Check xem có cảm biến chưa
                         let sensorDisplay = spot.sensorId ? `<strong style="color:#f39c12">${spot.sensorId}</strong>` : '<i style="color:gray">Chưa gắn</i>';
                         
                         html += `
@@ -556,7 +551,7 @@
 
         // Hàm giả lập quẹt thẻ
         async function simulateScan() {
-            let cardId = prompt("Sếp hãy nhập mã Thẻ RFID (VD: CARD_111) để quẹt:");
+            let cardId = prompt("Hãy nhập mã Thẻ RFID (VD: CARD_111) để quẹt:");
             if (!cardId) return;
 
             try {
@@ -591,11 +586,9 @@
                         let statusHtml = row.status === 'IN' ? '<span style="color:#00ff88;">Đang gửi</span>' : '<span style="color:#ff4444;">Đã ra</span>';
                         let fee = row.fee ? row.fee + ' đ' : '-';
                         
-                        // ======== ĐOẠN MỚI THAY ĐỔI Ở ĐÂY NÀY SẾP ========
-                        // Chuyển từ việc lấy Biển số sang lấy Mã thẻ (cardId)
+                        // lấy Mã thẻ (cardId)
                         let cardDisplay = (row.rfidCard && row.rfidCard.cardId) ? row.rfidCard.cardId : 'Khách lạ';
 
-                        // Đổ data vào dòng <tr> của bảng
                         html += `<tr><td><strong style="color: #00d2ff;">${cardDisplay}</strong></td><td>${inTime}</td><td>${outTime}</td><td>${statusHtml}</td><td>${fee}</td></tr>`;
                         // ===================================================
 

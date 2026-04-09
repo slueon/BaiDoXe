@@ -129,15 +129,49 @@ public class RfidController {
         return response;
     }
 
-    // 3. API Xóa thẻ
+    // API Xóa thẻ RFID
     @DeleteMapping("/{cardId}")
     public Map<String, Object> deleteCard(@PathVariable String cardId) {
         Map<String, Object> response = new HashMap<>();
         try {
+            // Thử xóa thẻ trong Database
             cardRepo.deleteById(cardId);
+            
             response.put("success", true);
+            response.put("message", "Đã xóa thẻ thành công khỏi hệ thống!");
+        } catch (Exception e) {
+            // Nếu xóa thất bại (do dính khóa ngoại MySQL vì thẻ đã từng quẹt xe)
+            response.put("success", false);
+            response.put("message", "Không thể xóa! Thẻ này đã có lịch sử ra/vào bãi. Chỉ có thể Khóa nó lại.");
+        }
+        return response;
+    }
+
+    // API Khóa / Mở khóa thẻ (Tận dụng biến isActive có sẵn)
+    @PutMapping("/toggle/{cardId}")
+    public Map<String, Object> toggleCard(@PathVariable String cardId) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Optional<RfidCard> cardOpt = cardRepo.findById(cardId);
+            if (cardOpt.isPresent()) {
+                RfidCard card = cardOpt.get();
+                
+                // Lấy trạng thái hiện tại (nếu null thì mặc định là true)
+                boolean currentStatus = card.getIsActive() != null ? card.getIsActive() : true;
+                
+                // Đảo ngược trạng thái
+                card.setIsActive(!currentStatus);
+                cardRepo.save(card);
+                
+                response.put("success", true);
+                response.put("message", !currentStatus ? "Đã MỞ KHÓA thẻ!" : "Đã KHÓA thẻ!");
+            } else {
+                response.put("success", false);
+                response.put("message", "Không tìm thấy thẻ!");
+            }
         } catch (Exception e) {
             response.put("success", false);
+            response.put("message", "Lỗi Server!");
         }
         return response;
     }

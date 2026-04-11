@@ -38,7 +38,7 @@ public class ParkingSpotController {
             parkingSpotRepository.save(newSpot);
             
             response.put("success", true);
-            response.put("message", "Đã quy hoạch thêm ô đỗ mới thành công!");
+            response.put("message", "Đã thêm ô đỗ mới thành công");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);

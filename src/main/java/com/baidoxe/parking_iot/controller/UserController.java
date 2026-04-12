@@ -33,7 +33,7 @@ public class UserController {
             if (user != null && user.getPasswordHash() != null && user.getPasswordHash().equals(passwordIn)) {
                 // TRÚNG MÁNH -> Cấp phép cho vào!
                 response.put("success", true);
-                response.put("message", "Đăng nhập thành công! Chào sếp " + user.getFullName());
+                response.put("message", "Đăng nhập thành công!" + user.getFullName());
                 response.put("role", user.getRole());
                 
                 // Bắt buộc phải có cái Token fake này để Frontend nhét vào localStorage
@@ -52,7 +52,7 @@ public class UserController {
         } catch (Exception e) {
             // Lỡ có sập server hay lỗi DB thì báo luôn
             response.put("success", false);
-            response.put("message", "Lỗi Backend cmnr sếp ơi: " + e.getMessage());
+            response.put("message", "Lỗi Backend" + e.getMessage());
             return ResponseEntity.status(500).body(response);
         }
     }
@@ -73,7 +73,7 @@ public class UserController {
             User existUser = userRepository.findByUsername(newUser.getUsername());
             if (existUser != null) {
                 response.put("success", false);
-                response.put("message", "Tên đăng nhập này có người xài rồi sếp ơi!");
+                response.put("message", "Tên đăng nhập này đã có");
                 return ResponseEntity.status(400).body(response);
             }
             
@@ -99,7 +99,7 @@ public class UserController {
             User existingUser = userRepository.findById(id).orElse(null);
             if (existingUser == null) {
                 response.put("success", false);
-                response.put("message", "Không tìm thấy nhân viên này sếp ơi!");
+                response.put("message", "Không tìm thấy nhân viên này");
                 return ResponseEntity.status(404).body(response);
             }
             

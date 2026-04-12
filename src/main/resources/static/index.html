@@ -138,7 +138,7 @@
                         </thead>
                         <tbody id="users-table">
                             <tr>
-                                <td>1</td><td>admin</td><td>Sếp Tổng</td><td><span style="color:#ff4d4d; font-weight:bold;">ADMIN</span></td>
+                                <td>1</td><td>admin</td><td>QuanTriVien</td><td><span style="color:#ff4d4d; font-weight:bold;">ADMIN</span></td>
                                 <td>
                                     <button class="btn-edit">Sửa</button>
                                     <button class="btn-delete">Khóa</button>
@@ -159,7 +159,7 @@
             <div id="tab-rfid" class="tab-content">
                 <div class="crud-container">
                     <div class="crud-header">
-                        <h2>💳 Danh Sách Thẻ RFID Đã Đăng Ký</h2>
+                        <h2>Danh Sách Thẻ RFID Đã Đăng Ký</h2>
                         <button class="btn-add" onclick="addNewRfidCard()">Gán Thẻ Mới</button>
                     </div>
                     <table>
@@ -318,7 +318,6 @@
                 .then(data => {
                     let html = '';
                     data.forEach(user => {
-                        // Tô màu phân biệt sếp với lính cho dễ nhìn
                         let roleColor = user.role === 'ADMIN' ? '#ff4d4d' : '#00ff88';
                         html += `
                             <tr>
@@ -371,14 +370,13 @@
                     fetchUsers(); // Thêm thành công thì load lại cái bảng ngay cho nóng!
                 }
             } catch (error) {
-                alert("Lỗi kết nối Backend rồi sếp ơi!");
+                alert("Lỗi kết nối Backend rồi");
             }
         }
 
         // Hàm xử lý bấm nút Xóa
         async function deleteUser(id, username) {
-            // Hỏi lại cho chắc cốp, lỡ sếp bấm nhầm
-            if (!confirm(`Sếp có chắc chắn muốn đuổi việc nhân viên [${username}] không?`)) return;
+            if (!confirm(`Chắc chắn muốn xóa nhân viên[${username}] không?`)) return;
 
             try {
                 const response = await fetch(`http://localhost:8080/api/users/${id}`, {
@@ -602,7 +600,7 @@
         }
 
         async function deleteSpot(id, name) {
-            if (!confirm(`Sếp có chắc chắn muốn đập bỏ [${name}] không?`)) return;
+            if (!confirm(`Chắc chắn muốn đập bỏ [${name}] không?`)) return;
             try {
                 const response = await fetch(`http://localhost:8080/api/spots/${id}`, { method: 'DELETE' });
                 const data = await response.json();

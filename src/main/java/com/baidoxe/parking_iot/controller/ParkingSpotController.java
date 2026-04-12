@@ -58,11 +58,11 @@ public class ParkingSpotController {
             parkingSpotRepository.deleteById(id);
             
             response.put("success", true);
-            response.put("message", "Đã dẹp bỏ ô đỗ này thành công!");
+            response.put("message", "Da bo o do nay thanh cong!");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Lỗi! Đang có xe đỗ ở đây hoặc dính dữ liệu lịch sử!");
+            response.put("message", "Loi! Dang co xe do o day hoac dinh du lieu lich su!");
             return ResponseEntity.status(500).body(response);
         }
     }

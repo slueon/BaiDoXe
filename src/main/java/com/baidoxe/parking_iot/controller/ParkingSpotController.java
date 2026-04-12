@@ -48,7 +48,7 @@ public class ParkingSpotController {
         try {
             parkingSpotRepository.deleteById(id);
             response.put("success", true);
-            response.put("message", "Đã dẹp bỏ ô đỗ này thành công!");
+            response.put("message", "Đã bỏ ô đỗ này thành công");
             return response;
         } catch (Exception e) {
             response.put("success", false);

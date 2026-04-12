@@ -1,3 +1,5 @@
+let myChart = null; // Khai báo biến biểu đồ ở đây
+
 function fetchHistory() {
     fetch('http://localhost:8080/api/history')
         .then(res => res.json())
@@ -30,7 +32,7 @@ function drawChart(labels, dataPoints) {
     const canvas = document.getElementById('revenueChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    if (myChart != null) {
+    if (myChart !== null) {
         myChart.destroy();
     }
     myChart = new Chart(ctx, {

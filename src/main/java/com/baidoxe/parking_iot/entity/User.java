@@ -23,5 +23,5 @@ public class User {
     private String fullName;
 
     @Column(length = 20)
-    private String role = "GUARD";
+    private String role = "STAFF";
 }

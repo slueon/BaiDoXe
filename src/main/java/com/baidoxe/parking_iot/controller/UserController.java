@@ -5,7 +5,6 @@ import com.baidoxe.parking_iot.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,45 +16,6 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
-
-    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
-    @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> loginRequest) {
-        Map<String, Object> response = new HashMap<>();
-        
-        // 1. Rút username và password từ cái form Frontend (nãy anh em mình code biến "password")
-        String usernameIn = loginRequest.get("username");
-        String passwordIn = loginRequest.get("password"); 
-        
-        try {
-            // 2. Chọc vào DB tìm User
-            User user = userRepository.findByUsername(usernameIn);
-            
-            // 3. Kiểm tra xem User có tồn tại không, và Pass gõ vào có khớp với Pass trong DB không
-            if (user != null && user.getPasswordHash() != null && passwordEncoder.matches(passwordIn, user.getPasswordHash())) {
-                // TRÚNG MÁNH -> Cấp phép cho vào!
-                response.put("success", true);
-                response.put("message", "Đăng nhập thành công" + user.getFullName() + "!");
-                response.put("role", user.getRole()); 
-                
-                // Trả về mã 200 OK
-                return ResponseEntity.ok(response); 
-            } else {
-                // SAI PASS HOẶC KHÔNG TỒN TẠI -> Đuổi về!
-                response.put("success", false);
-                response.put("message", "Tài khoản hoặc mật khẩu không đúng");
-                
-                // Trả về mã 401 Unauthorized (Frontend thấy mã này sẽ hiện chữ đỏ)
-                return ResponseEntity.status(401).body(response); 
-            }
-        } catch (Exception e) {
-            // Lỡ có sập server hay lỗi DB thì báo luôn
-            response.put("success", false);
-            response.put("message", "Lỗi hệ thống: " + e.getMessage());
-            return ResponseEntity.status(500).body(response);
-        }
-    }
 
     // ================= 1. API LẤY DANH SÁCH NHÂN VIÊN =================
     @GetMapping
@@ -77,8 +37,6 @@ public class UserController {
                 return ResponseEntity.status(400).body(response);
             }
             
-            // Băm mật khẩu ra mã Hash trước khi lưu vào DB
-            newUser.setPasswordHash(passwordEncoder.encode(newUser.getPasswordHash()));
             userRepository.save(newUser);
             
             response.put("success", true);
@@ -110,7 +68,7 @@ public class UserController {
             
             // Nếu có nhập pass mới thì mới đổi, không thì giữ nguyên
             if (updatedUser.getPasswordHash() != null && !updatedUser.getPasswordHash().isEmpty()) {
-                existingUser.setPasswordHash(passwordEncoder.encode(updatedUser.getPasswordHash()));
+                existingUser.setPasswordHash(updatedUser.getPasswordHash());
             }
 
             userRepository.save(existingUser);

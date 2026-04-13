@@ -26,7 +26,7 @@ public class UserController {
         try {
             // 2. Chọc vào DB tìm User
             User user = userRepository.findByUsername(usernameIn);
-            
+
             // 3. Kiểm tra xem User có tồn tại không, và Pass gõ vào có khớp với Pass trong DB không
             if (user != null && user.getPasswordHash() != null && user.getPasswordHash().equals(passwordIn)) {
                 // TRÚNG MÁNH -> Cấp phép cho vào!
@@ -58,7 +58,6 @@ public class UserController {
     // ================= 1. API LẤY DANH SÁCH NHÂN VIÊN =================
     @GetMapping
     public ResponseEntity<?> getAllUsers() {
-        // Gọi thẳng lệnh findAll() của JPA để lôi hết data trong bảng users ra
         return ResponseEntity.ok(userRepository.findAll());
     }
 
@@ -67,23 +66,21 @@ public class UserController {
     public ResponseEntity<Map<String, Object>> addUser(@RequestBody User newUser) {
         Map<String, Object> response = new HashMap<>();
         try {
-            // Check xem thằng này đã tồn tại trong DB chưa (chống trùng username)
             User existUser = userRepository.findByUsername(newUser.getUsername());
             if (existUser != null) {
                 response.put("success", false);
-                response.put("message", "Tên đăng nhập này có người xài rồi sếp ơi!");
+                response.put("message", "Tên đăng nhập da ton tai!");
                 return ResponseEntity.status(400).body(response);
             }
             
-            // Chưa có thì lưu vào DB (Pass hiện tại anh em mình vẫn đang chơi hệ pass trần nhé)
             userRepository.save(newUser);
             
             response.put("success", true);
-            response.put("message", "Đã thêm nhân viên thành công!");
+            response.put("message", "Đã thêm nhân viên!");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Lỗi rớt mạng rớt server: " + e.getMessage());
+            response.put("message", "Lỗi " + e.getMessage());
             return ResponseEntity.status(500).body(response);
         }
     }
@@ -93,19 +90,19 @@ public class UserController {
     public ResponseEntity<Map<String, Object>> updateUser(@PathVariable Integer id, @RequestBody User updatedUser) {
         Map<String, Object> response = new HashMap<>();
         try {
-            // Tìm xem ông nhân viên này có trong DB không
             User existingUser = userRepository.findById(id).orElse(null);
             if (existingUser == null) {
                 response.put("success", false);
-                response.put("message", "Không tìm thấy nhân viên này sếp ơi!");
+                response.put("message", "Không tìm thấy nhân viên này!");
                 return ResponseEntity.status(404).body(response);
             }
-            
-            // Cập nhật thông tin mới (Giả sử chỉ cho sửa Tên và Quyền, không sửa Username)
+            else if(existingUser.getRole().equals("ADMIN") && !updatedUser.getRole().equals("ADMIN")) {
+                response.put("success",false) ;
+                response.put("message","Ko thể hạ quyền admin") ;
+                return ResponseEntity.status(400).body(response) ;
+            }
             existingUser.setFullName(updatedUser.getFullName());
             existingUser.setRole(updatedUser.getRole());
-            
-            // Nếu có nhập pass mới thì mới đổi, không thì giữ nguyên
             if (updatedUser.getPasswordHash() != null && !updatedUser.getPasswordHash().isEmpty()) {
                 existingUser.setPasswordHash(updatedUser.getPasswordHash());
             }
@@ -113,7 +110,7 @@ public class UserController {
             userRepository.save(existingUser);
             
             response.put("success", true);
-            response.put("message", "Đã cập nhật thông tin thành công!");
+            response.put("message", "Đã cập nhật!");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
@@ -126,15 +123,20 @@ public class UserController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Object>> deleteUser(@PathVariable Integer id) {
         Map<String, Object> response = new HashMap<>();
+        User existingUser = userRepository.findById(id).orElse(null);
+        if(existingUser.getRole().equals("ADMIN")) {
+            response.put("success",false) ;
+            response.put("message","Ko thể xóa 1 admin") ;
+            return ResponseEntity.status(400).body(response) ;
+        }
         try {
-            // Chỗ này làm đơn giản là Xóa thẳng khỏi DB luôn nhé
             userRepository.deleteById(id);
             response.put("success", true);
             response.put("message", "Đã tiễn nhân viên ra chuồng gà!");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Lỗi rồi, chắc nhân viên này đang dính líu đến lịch sử bãi xe nên DB không cho xóa!");
+            response.put("message", "Lỗi!");
             return ResponseEntity.status(500).body(response);
         }
     }

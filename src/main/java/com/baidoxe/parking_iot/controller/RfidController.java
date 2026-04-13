@@ -27,15 +27,12 @@ public class RfidController {
     @Autowired
     private ParkingHistoryRepository historyRepo;
 
-    // GỌI THÊM ÔNG NÀY ĐỂ ĐI TÌM Ô TRỐNG
     @Autowired
     private ParkingSpotRepository spotRepo; 
 
     @PostMapping("/scan/{cardId}")
     public Map<String, Object> scanCard(@PathVariable String cardId) {
         Map<String, Object> response = new HashMap<>();
-        
-        // 1. KIỂM TRA THẺ CÓ HỢP LỆ KHÔNG
         Optional<RfidCard> cardOpt = cardRepo.findById(cardId);
         if (cardOpt.isEmpty()) {
             response.put("success", false);
@@ -115,13 +112,11 @@ public class RfidController {
         return response;
     }
 
-    // 1. API Lấy danh sách toàn bộ thẻ để hiển thị lên Web
     @GetMapping
     public List<RfidCard> getAllCards() {
         return cardRepo.findAll();
     }
 
-    // 2. API Thêm thẻ mới (để cái nút "Gán Thẻ Mới" màu xanh nó hoạt động)
     @PostMapping
     public Map<String, Object> addCard(@RequestBody RfidCard newCard) {
         Map<String, Object> response = new HashMap<>();
@@ -136,7 +131,7 @@ public class RfidController {
         return response;
     }
 
-    // 3. API Xóa thẻ
+
     @DeleteMapping("/{cardId}")
     public Map<String, Object> deleteCard(@PathVariable String cardId) {
         Map<String, Object> response = new HashMap<>();
@@ -163,7 +158,7 @@ public class RfidController {
             boolean isActive = !card.getIsActive() ;
             cardRepo.setActive(cardID, isActive);
             response.put("success",true) ;
-            response.put("message", isActive ? "Đã mở khóa thẻ!" : "Đã khóa thẻ thành công!");
+            response.put("message", isActive ? "Đã mở khóa thẻ!" : "Đã khóa thẻ!");
             response.put("currentStatus", isActive) ;
         }
         return response ;

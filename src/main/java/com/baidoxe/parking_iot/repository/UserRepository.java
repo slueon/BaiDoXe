@@ -15,10 +15,10 @@ public class UserRepository {
         List<User> users = new ArrayList<>();
         String sql = "SELECT * FROM Users";
         try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-             Statement stmt = conn.createStatement();//gửi lệnh SQL đi
-             ResultSet rs = stmt.executeQuery(sql)) {//kết quả nhận về
-            while (rs.next()) {//đọc từng dòng kết quả, mỗi dòng là một user
-                User user = mapRowToUser(rs);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                User user = setUser(rs);
                 users.add(user);
             }
         } catch (SQLException e) {
@@ -27,14 +27,14 @@ public class UserRepository {
         return users;
     }
 
-    public Optional<User> findById(Integer id) {//Chứa một user hoặc rỗng nếu k tìm thấy
+    public Optional<User> findById(Integer id) {
         String sql = "SELECT * FROM Users WHERE user_id = ?";
         try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);//gán giá trị id vào dấu ?
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    User user = mapRowToUser(rs);
+                    User user = setUser(rs);
                     return Optional.of(user);
                 }
             }
@@ -44,8 +44,9 @@ public class UserRepository {
         return Optional.empty();
     }
     
+
     public User save(User user) {
-        if (user.getUserId() == null) {//nếu userId là NULL thì tạo mới, ngược lại cập nhật
+        if (user.getUserId() == null) {
             // Insert
             String sql = "INSERT INTO Users (username, password_hash, full_name, role) VALUES (?, ?, ?, ?)";
             try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
@@ -99,7 +100,7 @@ public class UserRepository {
             stmt.setString(1, username);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return mapRowToUser(rs);
+                    return setUser(rs);
                 }
             }
         } catch (SQLException e) {
@@ -109,7 +110,7 @@ public class UserRepository {
     }
 
     //gán dữ liệu từ rs vào đối tượng user
-    private User mapRowToUser(ResultSet rs) throws SQLException {
+    private User setUser(ResultSet rs) throws SQLException {
         User user = new User();
         user.setUserId(rs.getInt("user_id"));
         user.setUsername(rs.getString("username"));

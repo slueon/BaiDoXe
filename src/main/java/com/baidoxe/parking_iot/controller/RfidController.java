@@ -42,14 +42,6 @@ public class RfidController {
             return response;
         }
 
-        // KIỂM TRA THẺ CÓ ĐANG BỊ KHÓA KHÔNG
-        RfidCard currentCard = cardOpt.get();
-        if (currentCard.getIsActive() != null && currentCard.getIsActive() == false) {
-            response.put("success", false);
-            response.put("message", "Thẻ đã BỊ KHÓA! Không được phép qua trạm.");
-            return response; // Dừng luôn tại đây, không cho chạy xuống code mở cổng nữa
-        }
-
         ParkingHistory activeSession = historyRepo.findByRfidCard_CardIdAndStatus(cardId, "IN");
 
         if (activeSession == null) {
@@ -77,6 +69,11 @@ public class RfidController {
             newSession.setRfidCard(cardOpt.get());
             newSession.setEntryTime(LocalDateTime.now());
             newSession.setStatus("IN");
+            
+            // Nếu Database của sếp có liên kết khóa ngoại spot_id trong bảng lịch sử, 
+            // sếp có thể mở comment dòng dưới này:
+            // newSession.setSpotId(availableSpot.getSpotId()); 
+            
             historyRepo.save(newSession);
             
             // 4. BÁO THIẾT BỊ MỞ BARRIER

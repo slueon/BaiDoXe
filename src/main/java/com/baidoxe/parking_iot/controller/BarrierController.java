@@ -23,7 +23,6 @@ public class BarrierController {
         try {
             // Bắn đúng cái chữ (command) nhận được lên topic mới
             mqttSubscriber.publishMessage("/ptit/servo/emergency", command);
-            
             response.put("success", true);
             response.put("message", "Đã gửi thành công lệnh khẩn cấp: " + command);
             return ResponseEntity.ok(response);

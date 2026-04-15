@@ -33,7 +33,7 @@ public class UserController {
             User existUser = userRepository.findByUsername(newUser.getUsername());
             if (existUser != null) {
                 response.put("success", false);
-                response.put("message", "Tên đăng nhập này có người xài rồi sếp ơi!");
+                response.put("message", "Tên đăng nhập này đã có");
                 return ResponseEntity.status(400).body(response);
             }
             
@@ -58,7 +58,7 @@ public class UserController {
             User existingUser = userRepository.findById(id).orElse(null);
             if (existingUser == null) {
                 response.put("success", false);
-                response.put("message", "Không tìm thấy nhân viên này sếp ơi!");
+                response.put("message", "Không tìm thấy nhân viên này");
                 return ResponseEntity.status(404).body(response);
             }
             

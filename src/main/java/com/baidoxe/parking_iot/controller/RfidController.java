@@ -69,10 +69,7 @@ public class RfidController {
             newSession.setRfidCard(cardOpt.get());
             newSession.setEntryTime(LocalDateTime.now());
             newSession.setStatus("IN");
-            
-            // Nếu Database của sếp có liên kết khóa ngoại spot_id trong bảng lịch sử, 
-            // sếp có thể mở comment dòng dưới này:
-            // newSession.setSpotId(availableSpot.getSpotId()); 
+        
             
             historyRepo.save(newSession);
             

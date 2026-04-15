@@ -55,7 +55,7 @@ public class MqttSubscriber implements MqttCallback {
         String payload = new String(message.getPayload()).trim();
 
         // ==========================================
-        // TRƯỜNG HỢP 1: CẢM BIẾN VỊ TRÍ ĐỖ BÁO VỀ
+        // CẢM BIẾN VỊ TRÍ ĐỖ BÁO VỀ
         // ==========================================
         if (topic.startsWith("/state/park/")) {
             String[] parts = topic.split("/");
@@ -72,10 +72,10 @@ public class MqttSubscriber implements MqttCallback {
         } 
         
         // ==========================================
-        // TRƯỜNG HỢP 2: THẺ RFID VỪA ĐƯỢC QUẸT
+        // THẺ RFID VỪA ĐƯỢC QUẸT
         // ==========================================
         else if (topic.equals("/ptit/parking/check")) {
-            System.out.println("💳 Vừa quẹt thẻ UID: " + payload);
+            System.out.println("Vừa quẹt thẻ UID: " + payload);
             
             // Gọi hàm xử lý (Hàm này tự động biết là Vào hay Ra nhờ Database)
             Map<String, Object> result = rfidController.scanCard(payload);
@@ -90,12 +90,12 @@ public class MqttSubscriber implements MqttCallback {
                 if ("ENTRY".equals(action)) {
                     // XE VÀO: Bắn số "1" lên kênh điều khiển
                     client.publish("/ptit/servo/control", new MqttMessage("1".getBytes()));
-                    System.out.println("🚧 Đã bắn lệnh 1 (MỞ BARIE VÀO)!");
+                    System.out.println("Đã bắn lệnh 1 (MỞ BARIE VÀO)!");
                 } 
                 else if ("EXIT".equals(action)) {
                     // XE RA: Bắn số "2" lên kênh điều khiển
                     client.publish("/ptit/servo/control", new MqttMessage("2".getBytes()));
-                    System.out.println("🚧 Đã bắn lệnh 2 (MỞ BARIE RA)!");
+                    System.out.println("Đã bắn lệnh 2 (MỞ BARIE RA)!");
                 }
             }
         }

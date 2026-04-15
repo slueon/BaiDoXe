@@ -54,7 +54,7 @@ async function addNewSpot() {
 }
 
 async function deleteSpot(id, name) {
-    if (!confirm(`Sếp có chắc chắn muốn đập bỏ [${name}] không?`)) return;
+    if (!confirm(`Có chắc chắn muốn đập bỏ [${name}] không?`)) return;
     try {
         const response = await fetch(`http://localhost:8080/api/spots/${id}`, { method: 'DELETE' });
         const data = await response.json();

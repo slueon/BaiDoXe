@@ -51,12 +51,12 @@ async function addNewUser() {
             fetchUsers();
         }
     } catch (error) {
-        alert("Lỗi kết nối Backend rồi sếp ơi!");
+        alert("Lỗi kết nối Backend rồi");
     }
 }
 
 async function deleteUser(id, username) {
-    if (!confirm(`Sếp có chắc chắn muốn đuổi việc nhân viên [${username}] không?`)) return;
+    if (!confirm(`Có chắc chắn muốn đuổi việc nhân viên [${username}] không?`)) return;
 
     try {
         const response = await fetch(`http://localhost:8080/api/users/${id}`, {

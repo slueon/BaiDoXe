@@ -8,8 +8,8 @@ function fetchHistory() {
             let revenueData = {};
             let reversedData = [...data].reverse();
             reversedData.forEach(row => {
-                let inTime = row.entryTime ? new Date(row.entryTime).toLocaleTimeString('vi-VN') : '-';
-                let outTime = row.exitTime ? new Date(row.exitTime).toLocaleTimeString('vi-VN') : '-';
+                let inTime = row.entryTime ? new Date(row.entryTime).toLocaleTimeString('vi-VN') + ' '+ new Date(row.entryTime).toLocaleDateString('vi-VN') : '-';
+                let outTime = row.exitTime ? new Date(row.exitTime).toLocaleTimeString('vi-VN') + ' ' + new Date(row.exitTime).toLocaleDateString('vi-VN') : '-';
                 let statusHtml = row.status === 'IN' ? '<span style="color:#00ff88;">Đang gửi</span>' : '<span style="color:#ff4444;">Đã ra</span>';
                 let fee = row.fee ? row.fee + ' đ' : '-';
                 let cardDisplay = (row.rfidCard && row.rfidCard.cardId) ? row.rfidCard.cardId : 'Khách lạ';

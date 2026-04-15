@@ -2,24 +2,36 @@
 function checkAuth() {
     const token = sessionStorage.getItem('iot_parking_token');
     const role = sessionStorage.getItem('iot_parking_role');
-    if (token) {
-        document.getElementById('login-container').style.display = 'none';
-        document.getElementById('app-container').style.display = 'flex';
-        document.getElementById('welcome-text').innerText = `Xin chào, ${role}`;
-        
-        // Trả về tab Dashboard mặc định mỗi lần load
-        document.getElementById('tab-dashboard').classList.add('active');
+    const currentPath = window.location.pathname;
 
-        if (role === 'ADMIN') {
-            document.getElementById('sidebar').style.display = 'block';
-        } else {
-            document.getElementById('sidebar').style.display = 'none';
-        }
-        if (typeof fetchSpots === 'function') fetchSpots();
-    } else {
-        document.getElementById('login-container').style.display = 'flex';
-        document.getElementById('app-container').style.display = 'none';
+    // 1. Nếu chưa có token mà đang không ở trang login -> Đuổi về login
+    if (!token && !currentPath.includes('login.html')) {
+        window.location.href = 'login.html';
+        return;
     }
+
+    // 2. Nếu đã đăng nhập mà lại mở trang login -> Đẩy thẳng vào màn hình làm việc
+    if (token && (currentPath.includes('login.html') || currentPath === '/' || currentPath === '/index.html')) {
+        if (role === 'ADMIN') window.location.href = 'admin.html';
+        else window.location.href = 'staff.html';
+        return;
+    }
+
+    // 3. Bảo vệ trang Admin: Nếu không phải ADMIN mà mò vào admin.html -> Đuổi về staff
+    if (token && role !== 'ADMIN' && currentPath.includes('admin.html')) {
+        alert("Bạn không có quyền truy cập trang Quản trị!");
+        window.location.href = 'staff.html';
+        return;
+    }
+
+    // Hiển thị lời chào nếu có thẻ welcome-text
+    const welcomeText = document.getElementById('welcome-text');
+    if (welcomeText && role) {
+        welcomeText.innerText = `Xin chào, ${role}`;
+    }
+    
+    // Load dữ liệu bãi xe nếu có hàm
+    if (token && typeof fetchSpots === 'function') fetchSpots();
 }
 
 async function handleLogin() {
@@ -37,6 +49,13 @@ async function handleLogin() {
             sessionStorage.setItem('iot_parking_token', data.token);
             sessionStorage.setItem('iot_parking_role', data.role); 
             errorMsg.style.display = 'none';
+            
+            // CHUYỂN HƯỚNG URL Ở ĐÂY DỰA TRÊN QUYỀN
+            if (data.role === 'ADMIN') {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'staff.html';
+            }
             checkAuth();
         } else {
             errorMsg.style.display = 'block';
@@ -50,7 +69,5 @@ async function handleLogin() {
 
 function handleLogout() {
     sessionStorage.clear();
-    document.getElementById('username').value = '';
-    document.getElementById('password').value = '';
-    checkAuth();
+    window.location.href = 'login.html'; 
 }

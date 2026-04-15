@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Bảo Vệ - Bãi Xe IoT</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-container" style="display: flex;">
+        
+        <!-- ĐÃ XÓA BỎ SIDEBAR HOÀN TOÀN -->
+
+        <div class="main-content">
+            <div class="top-bar">
+                <h1>Hệ Thống Bãi Đỗ Xe IoT (Ca Trực)</h1>
+                <div>
+                    <span id="welcome-text" class="user-info"></span>
+                    <button class="btn-logout" onclick="handleLogout()" style="margin-left: 15px;">Đăng Xuất</button>
+                </div>
+            </div>
+
+            <div id="tab-dashboard" class="tab-content active">
+                <div class="dashboard-grid">
+                    <div class="map-section">
+                        <h2>Sơ Đồ Bãi Xe</h2>
+                        <div id="parking-lot"></div>
+                    </div>
+                    <div class="info-section">
+                        <div style="display: flex; gap: 15px; margin-bottom: 20px; width: 100%;">
+                            <button id="btn-gate-in" class="btn-scan" style="flex: 1; margin: 0; background-color: #e67e22;" onclick="toggleBarrier('in', this)">Mở Barrie đường vào</button>
+                            <button id="btn-gate-out" class="btn-scan" style="flex: 1; margin: 0; background-color: #e74c3c;" onclick="toggleBarrier('out', this)">Mở Barrie đường ra</button>
+                        </div>
+                        <h2>Lịch Sử Ra Vào Gần Nhất</h2>
+                        <table>
+                            <thead><tr><th>Mã Thẻ</th><th>Giờ Vào</th><th>Giờ Ra</th><th>Trạng Thái</th><th>Phí</th></tr></thead>
+                            <tbody id="history-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
